@@ -74,7 +74,10 @@ module.exports = function create (opts) {
 
     function clicked (e, bounds) {
       if (e.altKey || e.shiftKey || e.ctrlKey || e.metaKey) return hideWindow()
-      if (menubar.window && menubar.window.isVisible()) return hideWindow()
+      const shouldHide = menubar.window &&
+            menubar.window.isVisible() &&
+            !menubar.window.isFullScreen()
+      if (shouldHide) return hideWindow()
       cachedBounds = bounds || cachedBounds
       showWindow(cachedBounds)
     }
@@ -99,15 +102,31 @@ module.exports = function create (opts) {
         menubar.window.setVisibleOnAllWorkspaces(true)
       }
 
+      menubar.window.on('enter-full-screen', function () {
+        if (opts.alwaysOnTop) menubar.window.setAlwaysOnTop(false)
+        if (opts.showOnAllWorkspaces !== false) {
+           menubar.window.setVisibleOnAllWorkspaces(false)
+        }
+      })
+      menubar.window.on('leave-full-screen', function () {
+        if (opts.alwaysOnTop) menubar.window.setAlwaysOnTop(true)
+        if (opts.showOnAllWorkspaces !== false) {
+           menubar.window.setVisibleOnAllWorkspaces(true)
+        }
+      })
+
       menubar.window.on('close', windowClear)
       menubar.window.loadURL(opts.index)
       menubar.emit('after-create-window')
     }
 
     function showWindow (trayPos) {
-      if (supportsTrayHighlightState) menubar.tray.setHighlightMode('always')
       if (!menubar.window) {
         createWindow()
+      }
+
+      if (supportsTrayHighlightState && !menubar.window.isFullScreen()) {
+        menubar.tray.setHighlightMode('always')
       }
 
       menubar.emit('show')
