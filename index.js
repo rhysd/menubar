@@ -100,7 +100,6 @@ module.exports = function create (opts) {
       }
 
       menubar.window.on('close', windowClear)
-      menubar.window.loadURL(opts.index)
       menubar.emit('after-create-window')
     }
 
