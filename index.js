@@ -70,6 +70,7 @@ module.exports = function create (opts) {
 
     menubar.showWindow = showWindow
     menubar.hideWindow = hideWindow
+    menubar.options = opts
     menubar.emit('ready')
 
     function clicked (e, bounds) {
